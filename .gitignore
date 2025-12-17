@@ -1,0 +1,9 @@
+# Common ignores for Python
+__pycache__/
+*.py[cod]
+venv/
+.env
+dist/
+build/
+*.egg-info
+*.db
