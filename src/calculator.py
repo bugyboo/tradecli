@@ -3,23 +3,27 @@ from settings import Settings
 from rich.console import Console
 
 def calc_menu(settings: Settings=Settings()):
-    console = Console()
-    account = settings.get_account()
-    secondary_currency = account.exchange_rate_label
-    exchange_rate = account.exchange_rate
-    
-    while True:
-        console.print("\n[bold blue]Calculator Menu[/bold blue]")
-        console.print("1. Percentage Calculation")
-        console.print(f"2. Currency Conversion (USD to {secondary_currency})")
-        choice = input("Select an option (1-2) or Enter to exit: ").strip()
+    console = Console()    
+    try:
+        account = settings.get_account()
+        secondary_currency = account.exchange_rate_label
+        exchange_rate = account.exchange_rate
         
-        if choice == "1":
-            percentage_calculation(console)
-        elif choice == "2":
-            currency_conversion(console, secondary_currency, exchange_rate)
-        else:
-            break
+        while True:
+            console.print("\n[bold blue]Calculator Menu[/bold blue]")
+            console.print("1. Percentage Calculation")
+            console.print(f"2. Currency Conversion (USD to {secondary_currency})")
+            choice = input("Select an option (1-2) or Enter to exit: ").strip()
+            
+            if choice == "1":
+                percentage_calculation(console)
+            elif choice == "2":
+                currency_conversion(console, secondary_currency, exchange_rate)
+            else:
+                break
+    except KeyboardInterrupt:
+        console.print("\n[red]Exiting calculator menu.[/red]")
+        input("Press Enter to continue...")
 
 def percentage_calculation(console: Console):
     console.print("\n[bold cyan]Percentage Calculation[/bold cyan]")

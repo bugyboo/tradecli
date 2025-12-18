@@ -138,6 +138,8 @@ def plan_menu(trades, selected_ticker, current_prices, settings: Settings):
             return
         except ValueError as e:
             console.print(f"[red]Invalid input: {e}[/red]")
+        except KeyboardInterrupt:
+            console.print("\n[red]Exit price calculation cancelled by user.[/red]")
         input("Press Enter to continue...")
     else:
         # Go to planning

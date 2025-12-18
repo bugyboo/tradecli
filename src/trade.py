@@ -91,7 +91,7 @@ def delete_trade(trade_id, settings=Settings()):
         conn.commit()
         conn.close()
     except sqlite3.Error as e:
-        console.print(f"[red]Error deleting trade: {e}[/red]")
+        console.print(f"[red]Error deleting trade: {e}[/red]")        
     
 def update_trade(trade_id, trade_date=None, symbol=None, opr=None, filled_qty=None, price=None, fees=None, vat=None, cost_value=None, profit_loss=None, is_position_open=None, settings=Settings()):
     """
@@ -146,7 +146,7 @@ def update_trade(trade_id, trade_date=None, symbol=None, opr=None, filled_qty=No
         conn.close()
         console.print("[green]Trade update operation completed.[/green]")
     except sqlite3.Error as e:
-        console.print(f"[red]Error updating trade: {e}[/red]")
+        console.print(f"[red]Error updating trade: {e}[/red]")    
     
 def deposit_funds(fund_date, source, amount_SAR, amount_USD, rate_exchange, settings=Settings()):
     """
@@ -164,7 +164,7 @@ def deposit_funds(fund_date, source, amount_SAR, amount_USD, rate_exchange, sett
         conn.close()
         console.print("[green]Funds deposit inserted successfully.[/green]")
     except sqlite3.Error as e:
-        console.print(f"[red]Error depositing funds: {e}[/red]")
+        console.print(f"[red]Error depositing funds: {e}[/red]")       
     
 def withdraw_funds(fund_date, source, amount_SAR, amount_USD, rate_exchange, settings=Settings()):
     """
@@ -183,6 +183,7 @@ def withdraw_funds(fund_date, source, amount_SAR, amount_USD, rate_exchange, set
         console.print("[green]Funds withdraw inserted successfully.[/green]")
     except sqlite3.Error as e:
         console.print(f"[red]Error withdrawing funds: {e}[/red]")
+        
 def buy_menu(selected_ticker, current_prices, total_cash, settings=Settings()):
     # Buy trade
     console = Console()
@@ -190,7 +191,7 @@ def buy_menu(selected_ticker, current_prices, total_cash, settings=Settings()):
         symbol = input(f"Enter Symbol or {selected_ticker} = ").strip().upper() or selected_ticker
         price_str = input(f"Enter Price ({current_prices.get(symbol, 0)}) = ").strip()
         price = float(price_str or current_prices.get(symbol, 0))                
-        max_qty = int(total_cash / current_prices.get(symbol, 1))
+        max_qty = int(total_cash / price)
         filled_qty = int(input(f"Enter Quantity (Max {max_qty}) = ").strip() or max_qty)
         fees = float(input("Enter Fees (default 1.8) = ").strip() or 1.8)
         vat = float(input("Enter VAT (default 0.27) = ").strip() or 0.27)
@@ -217,6 +218,9 @@ def buy_menu(selected_ticker, current_prices, total_cash, settings=Settings()):
     except ValueError as e:
         console.print(f"[red]Invalid input: {e}[/red]")
         input("Press Enter to continue...")    
+    except KeyboardInterrupt:
+        console.print("\n[red]Buy trade cancelled by user.[/red]")
+        input("Press Enter to continue...")
         
 def sell_menu(ticker_data, trades, selected_ticker, current_prices, settings=Settings()):
     console = Console()
@@ -269,6 +273,9 @@ def sell_menu(ticker_data, trades, selected_ticker, current_prices, settings=Set
     except ValueError as e:
         console.print(f"[red]Invalid input: {e}[/red]")
         input("Press Enter to continue...")
+    except KeyboardInterrupt:
+        console.print("\n[red]Sell trade cancelled by user.[/red]")
+        input("Press Enter to continue...")
         
 def delete_trade_menu(settings=Settings()):
     console = Console()
@@ -285,5 +292,8 @@ def delete_trade_menu(settings=Settings()):
         input("Press Enter to continue...")
     except ValueError as e:
         console.print(f"[red]Invalid Trade ID: {e}[/red]")
+        input("Press Enter to continue...")
+    except KeyboardInterrupt:
+        console.print("\n[red]Delete trade cancelled by user.[/red]")
         input("Press Enter to continue...")
     
