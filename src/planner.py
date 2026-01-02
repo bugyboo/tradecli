@@ -131,9 +131,16 @@ def plan_menu(trades, selected_ticker, current_prices, settings: Settings):
                 return
             total_qty = sum(trade[4] for trade in selected_trades)
             total_cost_value = sum(trade[8] for trade in selected_trades)
-            desired_profit_usd = float(input("Enter desired profit in USD: ").strip())
-            exit_price = (total_cost_value + desired_profit_usd) / total_qty
-            console.print(f"[green]Calculated Exit Price: ${exit_price:.2f} for total quantity {total_qty} to achieve desired profit of ${desired_profit_usd:.2f}[/green]")
+            exit_choice = input("Calculate exit position for (P)rice profit or (D)esired profit in USD? ( P or D): ").strip().lower()
+            if exit_choice == 'p':
+                target_price = float(input("Enter target exit price: ").strip())
+                exit_price = target_price
+                achieved_profit_usd = (exit_price * total_qty) - total_cost_value
+                console.print(f"[green]Calculated Exit Price: ${exit_price:.2f} for total quantity {total_qty} achieving profit of ${achieved_profit_usd:.2f}[/green]")
+            elif exit_choice == 'd':
+                desired_profit_usd = float(input("Enter desired profit in USD: ").strip())
+                exit_price = (total_cost_value + desired_profit_usd) / total_qty
+                console.print(f"[green]Calculated Exit Price: ${exit_price:.2f} for total quantity {total_qty} to achieve desired profit of ${desired_profit_usd:.2f}[/green]")
             input("Press Enter to continue...")
             return
         except ValueError as e:

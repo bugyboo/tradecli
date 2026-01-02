@@ -167,7 +167,7 @@ def main():
                 
 
             # Ticker summary table
-            table = Table(title="Summary of Holdings")
+            table = Table(title="Summary of Holdings (Version 0.1.1)")
             table.add_column("Ticker", style="cyan")
             table.add_column("Shares", justify="right")
             table.add_column("Total Cost", justify="right")
