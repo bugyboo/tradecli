@@ -178,7 +178,7 @@ def main():
             table.add_column("Unrealized P/L", justify="right")
             table.add_column("Realized P/L", justify="right")
             table.add_column("%, avg", justify="right")
-            table.add_column(f" Oversee P/L {oversee_shares}", justify="right")
+            table.add_column(" Oversee P/L", justify="right")
 
             for row in ticker_data:
                 symbol, net_shares, total_cost, profit, current_price = row
@@ -189,7 +189,7 @@ def main():
                 profit_text = f"[red]${profit:,.2f}[/red]" if profit < 0 else f"${profit:,.2f}"
                 profit_text_sar = f"[red]{settings.get_account().exchange_rate_label} {profit * settings.get_account().exchange_rate:,.2f}[/red]" if profit < 0 else f"{settings.get_account().exchange_rate_label} {profit * settings.get_account().exchange_rate:,.2f}"
                 oversee_pl = oversee_shares * (oversee_price - current_price) - (settings.get_account().fees_usd * 2)
-                table.add_row(symbol, str(net_shares), f"${total_cost:,.2f}", f"${market_value:,.2f}", unrealized_text, profit_text, f"{unrealized_pl/total_funds:.2%}", f"{oversee_price:,.2f}")
+                table.add_row(symbol, str(net_shares), f"${total_cost:,.2f}", f"${market_value:,.2f}", unrealized_text, profit_text, f"{unrealized_pl/total_funds:.2%}", f"{oversee_shares} x {oversee_price:,.2f}")
                 table.add_row(f"[magenta]{current_price:,.2f}[/magenta]", "", f"{settings.get_account().exchange_rate_label} {total_cost * settings.get_account().exchange_rate:,.2f}", f"{settings.get_account().exchange_rate_label} {market_value * settings.get_account().exchange_rate:,.2f}", unrealized_text_sar, profit_text_sar, f"{total_cost/net_shares:.2f}", f"{oversee_pl:,.2f}")
             console.print(table)
                 
