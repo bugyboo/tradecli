@@ -27,6 +27,9 @@ def main():
         settings = load_settings(settings_path)
             
         selected_ticker = settings.get_account().selected_ticker
+        
+        oversee_shares = 0
+        oversee_price = 0.0
             
         migrate.check_and_migrate( settings )    
         
@@ -167,7 +170,7 @@ def main():
                 
 
             # Ticker summary table
-            table = Table(title="Summary of Holdings (Version 0.1.1)")
+            table = Table(title="Summary of Holdings [dim](Version 0.1.1)[/dim]")
             table.add_column("Ticker", style="cyan")
             table.add_column("Shares", justify="right")
             table.add_column("Total Cost", justify="right")
@@ -175,6 +178,7 @@ def main():
             table.add_column("Unrealized P/L", justify="right")
             table.add_column("Realized P/L", justify="right")
             table.add_column("%, avg", justify="right")
+            table.add_column(f" Oversee P/L {oversee_shares}", justify="right")
 
             for row in ticker_data:
                 symbol, net_shares, total_cost, profit, current_price = row
@@ -184,12 +188,13 @@ def main():
                 unrealized_text_sar = f"[red]{settings.get_account().exchange_rate_label} {unrealized_pl * settings.get_account().exchange_rate:,.2f}[/red]" if unrealized_pl < 0 else f"{settings.get_account().exchange_rate_label} {unrealized_pl * settings.get_account().exchange_rate:,.2f}"            
                 profit_text = f"[red]${profit:,.2f}[/red]" if profit < 0 else f"${profit:,.2f}"
                 profit_text_sar = f"[red]{settings.get_account().exchange_rate_label} {profit * settings.get_account().exchange_rate:,.2f}[/red]" if profit < 0 else f"{settings.get_account().exchange_rate_label} {profit * settings.get_account().exchange_rate:,.2f}"
-                table.add_row(symbol, str(net_shares), f"${total_cost:,.2f}", f"${market_value:,.2f}", unrealized_text, profit_text, f"{unrealized_pl/total_funds:.2%}")
-                table.add_row(f"[magenta]{current_price}[/magenta]", "", f"{settings.get_account().exchange_rate_label} {total_cost * settings.get_account().exchange_rate:,.2f}", f"{settings.get_account().exchange_rate_label} {market_value * settings.get_account().exchange_rate:,.2f}", unrealized_text_sar, profit_text_sar, f"{total_cost/net_shares:.2f}")
+                oversee_pl = oversee_shares * (oversee_price - current_price) - (settings.get_account().fees_usd * 2)
+                table.add_row(symbol, str(net_shares), f"${total_cost:,.2f}", f"${market_value:,.2f}", unrealized_text, profit_text, f"{unrealized_pl/total_funds:.2%}", f"{oversee_price:,.2f}")
+                table.add_row(f"[magenta]{current_price:,.2f}[/magenta]", "", f"{settings.get_account().exchange_rate_label} {total_cost * settings.get_account().exchange_rate:,.2f}", f"{settings.get_account().exchange_rate_label} {market_value * settings.get_account().exchange_rate:,.2f}", unrealized_text_sar, profit_text_sar, f"{total_cost/net_shares:.2f}", f"{oversee_pl:,.2f}")
             console.print(table)
                 
             # Account Totals table
-            totals_table = Table(title=f"Account Totals ({settings.default_account})")
+            totals_table = Table(title=f"Account Totals ([cyan]{settings.default_account}[/cyan]) [dim]{settings.get_account().exchange_rate_label} {settings.get_account().exchange_rate}[/dim]")
             totals_table.add_column("Funds", justify="right")
             totals_table.add_column(f"Cash [dim]{cash_ratio:.2%}[/dim]", justify="right", style="magenta")
             totals_table.add_column("Fees", justify="right")
@@ -206,7 +211,7 @@ def main():
             # Prompt for input
             # ===============================================================================================
             
-            console.print("[blue]Options:[/blue] M[dim]enu[/dim], B[dim]uy[/dim], S[dim]ell[/dim], D[dim]elete[/dim], T[dim]icker[/dim], F[dim]ilter[/dim], P[dim]lan[/dim], U[dim]pdate[/dim], C[dim]alculator[/dim] or Q[dim]uit[/dim]")
+            console.print("[blue]Options:[/blue] M[dim]enu[/dim], B[dim]uy[/dim], S[dim]ell[/dim], D[dim]elete[/dim], T[dim]icker[/dim], F[dim]ilter[/dim], P[dim]lan[/dim], U[dim]pdate[/dim], C[dim]alculator[/dim], O[dim]versee[/dim] or Q[dim]uit[/dim]")
             user_input = input(f"Enter price for {selected_ticker} or options: ").strip()
             if user_input.lower() == 'q':
                 break
@@ -249,6 +254,31 @@ def main():
             
             elif user_input.lower() == 'c':
                 calc_menu(settings=settings)
+                
+            elif user_input.lower() == 'o':
+                # Oversee shares and price
+                try:
+                    oversee_shares = int(input("Enter number of shares to oversee: ").strip())
+                    oversee_price = float(input("Enter price to oversee: ").strip())
+                except ValueError:
+                    console.print("[red]Invalid input for oversee shares or price.[/red]")
+                
+            elif user_input == '+':
+                # Increment price by 1$
+                if selected_price is not None:
+                    selected_price += 1.0
+            elif user_input == '-':
+                # Decrement price by 1$
+                if selected_price is not None:
+                    selected_price -= 1.0
+            elif user_input == '++':
+                # Increment price by 0.30$
+                if selected_price is not None:
+                    selected_price += 0.30
+            elif user_input == '--':
+                # Decrement price by 0.30$
+                if selected_price is not None:
+                    selected_price -= 0.30
 
             else:
                 # Assume price update
