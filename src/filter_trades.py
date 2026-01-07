@@ -94,7 +94,7 @@ def filter_menu(settings: Settings=Settings(), current_prices={}):
             # Add totals row
             query_table.add_row("---", "---", "---", "---", "---", "---", "---", "---", "---")
             pl_text_total = f"[red]${total_trades_pl:,.2f}[/red]" if total_trades_pl < 0 else f"[green]${total_trades_pl:,.2f}[/green]" if total_trades_pl > 0 else "-"
-            query_table.add_row("Total", "", "", "", str(total_trades_qty), f"${total_trades_cost_value / total_trades_qty:.2f}", f"${total_trades_cost_value:,.2f}", pl_text_total, str(total_open_qty))
+            query_table.add_row("Total", "", "", "", str(total_trades_qty), "", f"${total_trades_cost_value:,.2f}", pl_text_total, str(total_open_qty))
             query_table.add_row(settings.get_account().exchange_rate_label, "", "", "", "", "", f"{total_trades_cost_value * settings.get_account().exchange_rate:,.2f}", f"{total_trades_pl * settings.get_account().exchange_rate:,.2f}","") 
 
             console.print(query_table)
