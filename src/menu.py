@@ -185,7 +185,7 @@ def main_menu(settings: Settings, settings_path: str):
     Cost Value: ${cost_value:,.2f}
     Profit/Loss: ${profit_loss:,.2f}
                     """)
-                    console.print("[blue]Options for Trade:[/blue] C[dim]lose Position,[/dim] O[dim]pen Position or[/dim] Enter [dim]to go back[/dim]")
+                    console.print("[blue]Options for Trade:[/blue] C[dim]lose Position,[/dim] O[dim]pen Position[/dim], E[dim]dit position or[/dim] Enter [dim]to go back[/dim]")
                     mark_pos_input = input("Enter choice: ").strip().lower()
                     if mark_pos_input == 'c':
                         # Close position
@@ -204,6 +204,19 @@ def main_menu(settings: Settings, settings_path: str):
                         # Open position
                         update_trade(trade_id, is_position_open=1, settings=settings)
                         console.print(f"[green]Trade ID {trade_id} marked as OPEN.[/green]")
+                    elif mark_pos_input == 'e':
+                        # Edit position
+                        try:
+                            new_filled_qty = float(input(f"Enter new filled quantity (current {filled_qty}): ").strip() or filled_qty)
+                            new_price = float(input(f"Enter new price (current {price}): ").strip() or price)
+                            new_fees = float(input(f"Enter new fees (current {fees}): ").strip() or fees)
+                            new_vat = float(input(f"Enter new VAT (current {vat}): ").strip() or vat)
+                            new_cost_value = float(input(f"Enter new cost value (current {cost_value}): ").strip() or cost_value)
+                            new_profit_loss = float(input(f"Enter new profit/loss (current {profit_loss}): ").strip() or profit_loss)
+                            update_trade(trade_id, filled_qty=new_filled_qty, price=new_price, fees=new_fees, vat=new_vat, cost_value=new_cost_value, profit_loss=new_profit_loss, settings=settings)
+                            console.print(f"[green]Trade ID {trade_id} updated successfully.[/green]")
+                        except ValueError as e:
+                            console.print(f"[red]Invalid input: {e}. Trade not updated.[/red]")
                 else:
                     console.print(f"[red]No trade found with ID {trade_id}.[/red]")
             else:
