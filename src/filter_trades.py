@@ -15,7 +15,7 @@ def filter_menu(settings: Settings=Settings(), current_prices={}):
         cursor = conn.cursor()
         
         # filter trades by operation type
-        console.print("[blue]Filter Trades by:[/blue] B[dim]uy[/dim], S[dim]ell[/dim], P[dim]rice[/dim], D[dim]ate[/dim], A[dim]ll[/dim] or Enter to skip")
+        console.print("[blue]Filter Trades by:[/blue] B[dim]uy[/dim], S[dim]ell[/dim], P[dim]rice[/dim], D[dim]ate[/dim], [dim]P/[/dim]L, A[dim]ll[/dim] or Enter to skip")
         opr_filter = input("Enter choice: ").strip().lower()
         if opr_filter == 'b':
             cursor.execute("SELECT ID, trade_date, symbol, opr, filled_qty, price, cost_value, profit_loss, is_position_open FROM TRADES WHERE opr='buy' ORDER BY price")
@@ -42,6 +42,15 @@ def filter_menu(settings: Settings=Settings(), current_prices={}):
             except ValueError:
                 console.print(f"[red]Invalid month/year format.[/red]")
                 input("Press Enter to continue...")
+        elif opr_filter == 'l':
+            try:
+                pl_min = float(input("Enter minimum Profit/Loss to filter (e.g., -100.00): ").strip())
+                pl_max = float(input("Enter maximum Profit/Loss to filter (e.g., 100.00): ").strip())
+            except ValueError:
+                console.print(f"[red]Invalid Profit/Loss range input.[/red]")
+                input("Press Enter to continue...")
+                continue
+            cursor.execute("SELECT ID, trade_date, symbol, opr, filled_qty, price, cost_value, profit_loss, is_position_open FROM TRADES WHERE profit_loss >= ? AND profit_loss <= ? AND opr='sell' ORDER BY price", (pl_min, pl_max))
         elif opr_filter == 'a':
             # Fetch all trades sorted by price descending
             cursor.execute("SELECT ID, trade_date, symbol, opr, filled_qty, price, cost_value, profit_loss, is_position_open FROM TRADES ORDER BY price")

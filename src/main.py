@@ -148,7 +148,7 @@ def main():
                     pl_text_percent = (pl / cost_value) if cost_value != 0 else 0
                     pl_text_sar = f"[red]{pl * settings.get_account().exchange_rate:,.2f}[/red]" if pl < 0 else f"{pl * settings.get_account().exchange_rate :,.2f}"
                     opr_text = f"[green]{opr}[/green]" if opr.lower() == 'buy' else f"[red]{opr}[/red]"
-                    trades_table.add_row(str(counter), str(trade_date), symbol, f"{opr_text} #{str(ID)}", str(filled_qty), f"${price:,.2f}", f"${cost_value:,.2f}", f"{((filled_qty * price) + settings.get_account().fees_usd) / filled_qty :,.2f}", F"{pl_text} [dim]{pl_text_percent:.2%}[/dim]", pl_text_sar)
+                    trades_table.add_row(str(counter), str(trade_date), symbol, f"{opr_text} #{str(ID)}", str(filled_qty), f"${price:,.2f}", f"${cost_value:,.2f}", f"{(cost_value + settings.get_account().fees_usd) / filled_qty :,.2f}", F"{pl_text} [dim]{pl_text_percent:.2%}[/dim]", pl_text_sar)
                     counter += 1
                     total_qty += filled_qty
                     total_cost_value += cost_value
@@ -170,7 +170,7 @@ def main():
                 
 
             # Ticker summary table
-            table = Table(title="Summary of Holdings [dim](Version 0.1.3)[/dim]")
+            table = Table(title="Summary of Holdings [dim](Version 0.1.4)[/dim]")
             table.add_column("Ticker", style="cyan")
             table.add_column("Shares", justify="right")
             table.add_column("Total Cost", justify="right")
