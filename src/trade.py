@@ -64,12 +64,14 @@ def sell_trade(trade_date, symbol, filled_qty, price, fees=0.0, vat=0.0, cost_va
             # Update the corresponding buy trade to mark position as closed
             conn = sqlite3.connect(get_db_path(settings.default_account))
             cursor = conn.cursor()
-            cursor.execute("""
-                UPDATE TRADES
-                SET is_position_open = 0
-                WHERE ID = ? AND opr = 'buy'
-            """, (close_position,))
-            conn.commit()
+            trade_ids = [int(tid.strip()) for tid in close_position.split(",") if tid.strip().isdigit()]
+            for position in trade_ids:
+                cursor.execute("""
+                    UPDATE TRADES
+                    SET is_position_open = 0
+                    WHERE ID = ? AND opr = 'buy'
+                """, (position,))
+                conn.commit()
             conn.close()
             console.print(f"[yellow]Position for buy trade ID {close_position} closed.[/yellow]")
     except sqlite3.Error as e:
@@ -232,17 +234,25 @@ def sell_menu(ticker_data, trades, selected_ticker, current_prices, settings=Set
         fees = float(input("Enter Fees (default 1.8) = ").strip() or 1.8)
         vat = float(input("Enter VAT (default 0.27) = ").strip() or 0.27)                
         # calculate profit/loss from open position if applicable
-        close_position = input("Close Position Buy ID (or press Enter to skip): ").strip() or None
-        if close_position:
+        close_position = input("Close Positions [Buy ID] (comma separated) or (press Enter to skip): ").strip() or None
+        if close_position:            
             # Fetch the buy trade details from trades above
+            trade_ids = [int(tid.strip()) for tid in close_position.split(",") if tid.strip().isdigit()]
+            if not trade_ids:
+                console.print("[red]No valid Trade IDs entered.[/red]")
+                input("Press Enter to continue...")
+                return                      
             filled_qty = 0
             profit_loss = 0.0
-            buy_trade_details = next((trade for trade in trades if str(trade[0]) == close_position and trade[3].lower() == 'buy'), None)
-            if buy_trade_details:
-                _, _, cp_symbol, _, buy_filled_qty, _, _, _, buy_cost_value, _ = buy_trade_details
-                symbol = cp_symbol
-                filled_qty = buy_filled_qty                                                 
-                profit_loss = ( (price * filled_qty ) - (fees + vat) ) - ( buy_cost_value )
+            selected_trades = [trade for trade in trades if trade[0] in trade_ids and trade[3].lower() == 'buy']
+            if not selected_trades:
+                console.print("[red]No matching trades found for the given IDs.[/red]")
+                input("Press Enter to continue...")
+                return            
+
+            filled_qty = sum(trade[4] for trade in selected_trades)
+            buy_cost_value = sum(trade[8] for trade in selected_trades)                                               
+            profit_loss = ( (price * filled_qty ) - (fees + vat) ) - ( buy_cost_value )
         else:                                                                               
             filled_qty = int(input("Enter Quantity = ").strip())
             profit_loss = input("Enter Profit/Loss = ").strip() or 0.0
