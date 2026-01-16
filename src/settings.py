@@ -1,4 +1,5 @@
 from __future__ import annotations
+from datetime import datetime
 import json
 import os
 from rich.console import Console
@@ -10,7 +11,8 @@ class Account:
     exchange_rate_label: str = "SAR"
     exchange_rate: float = 3.7487
     selected_ticker: str = "$TSLA"
-    fees_usd: float = 2.08    
+    fees_usd: float = 2.08
+    created_at: str = ""   
 
 @dataclass
 class Settings:
@@ -81,7 +83,8 @@ def load_settings(settings_path: str) -> Settings:
             scar = float(scar_input) or 3.7487     
             selected_ticker = input("Enter default ticker symbol to track (e.g., $TSLA): ").strip().upper() or "$TSLA"
             fees_usd = float(input("Enter per trade fees in USD (default 2.08): ").strip() or 2.08)
-            account = Account(name=account_name, exchange_rate=scar, exchange_rate_label=scar_label, selected_ticker=selected_ticker, fees_usd=fees_usd)           
+            created_at = datetime.now().strftime("%Y-%m-%d %H:%M")
+            account = Account(name=account_name, exchange_rate=scar, exchange_rate_label=scar_label, selected_ticker=selected_ticker, fees_usd=fees_usd, created_at=created_at)           
             settings = Settings(default_account=account_name, accounts=[account])
             settings.save(settings_path)
             return settings

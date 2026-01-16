@@ -1,5 +1,5 @@
 from utils import get_db_path
-from settings import Settings, load_settings
+from settings import Settings, load_settings, Account
 import load_data
 import migrate
 from rich.console import Console
@@ -35,6 +35,9 @@ def main_menu(settings: Settings, settings_path: str):
             if acc_choice == 'n':
                 account_name = input("Enter account name (no spaces or special characters): ").strip()
                 settings.default_account = account_name
+                new_account = Account(name=account_name)
+                new_account.created_at = datetime.now().strftime("%Y-%m-%d %H:%M")
+                settings.accounts.append( new_account )
                 settings.save(settings_path)
                 console.print(f"[green]New account '{account_name}' created and set as default.[/green]")
                 settings = load_settings(settings_path)  # Reload settings
@@ -231,6 +234,7 @@ def main_menu(settings: Settings, settings_path: str):
             settings.get_account().selected_ticker = selected_ticker
             settings.get_account().fees_usd = fees_usd
             settings.get_account().exchange_rate = sar
+            settings.get_account().created_at = datetime.now().strftime("%Y-%m-%d %H:%M")
             settings.save(settings_path)
             console.print(f"[green]Settings updated.[/green]")
             input("Press Enter to continue...")    

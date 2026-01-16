@@ -5,6 +5,22 @@ from settings import Settings
 from rich.console import Console
 from rich.table import Table
 
+def insert_log(conn: sqlite3.Connection, cursor: sqlite3.Cursor, operation: str, message: str):
+    """
+    Insert a log entry into the LOGS table.
+    """
+    console = Console()
+    try:
+        log_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        cursor.execute("""
+            INSERT INTO LOGS (log_date, log_oper, log_details)
+            VALUES (?, ?, ?)
+        """, (log_date, operation, message))
+        conn.commit()
+        console.print("[green]Log entry inserted successfully.[/green]")
+    except sqlite3.Error as e:
+        console.print(f"[red]Error inserting log entry: {e}[/red]")
+
 def view_trade(trade_id, settings=Settings()):
     """
     View a trade from the TRADES table by ID.
@@ -40,6 +56,7 @@ def buy_trade(trade_date, symbol, filled_qty, price, fees=0.0, vat=0.0, cost_val
             VALUES (?, ?, 'buy', ?, ?, ?, ?, ?, 0, 1)
         """, (trade_date, symbol, filled_qty, price, fees, vat, cost_value))
         conn.commit()
+        insert_log(conn, cursor, "buy_trade", f"Buy trade for {symbol} with {filled_qty} on {trade_date} inserted.")
         conn.close()
         console.print("[green]Buy trade saved successfully.[/green]")
     except sqlite3.Error as e:
@@ -58,6 +75,7 @@ def sell_trade(trade_date, symbol, filled_qty, price, fees=0.0, vat=0.0, cost_va
             VALUES (?, ?, 'sell', ?, ?, ?, ?, ?, ?, 0)
         """, (trade_date, symbol, filled_qty, price, fees, vat, cost_value, profit_loss))
         conn.commit()
+        insert_log(conn, cursor, "sell_trade", f"Sell trade for {symbol} with {filled_qty} on {trade_date} inserted.")
         conn.close()
         console.print("[green]Sell trade saved successfully.[/green]")
         if close_position:
@@ -91,6 +109,7 @@ def delete_trade(trade_id, settings=Settings()):
         else:
             console.print(f"[yellow]No trade found with ID {trade_id}.[/yellow]")
         conn.commit()
+        insert_log(conn, cursor, "delete_trade", f"Trade with ID {trade_id} deleted.")
         conn.close()
     except sqlite3.Error as e:
         console.print(f"[red]Error deleting trade: {e}[/red]")        
@@ -145,6 +164,7 @@ def update_trade(trade_id, trade_date=None, symbol=None, opr=None, filled_qty=No
         else:
             console.print(f"[yellow]No trade found with ID {trade_id}.[/yellow]")
         conn.commit()
+        insert_log(conn, cursor, "update_trade", f"Trade with ID {trade_id} updated.")
         conn.close()
         console.print("[green]Trade update operation completed.[/green]")
     except sqlite3.Error as e:
@@ -163,6 +183,7 @@ def deposit_funds(fund_date, source, amount_SAR, amount_USD, rate_exchange, sett
             VALUES (?, 'deposit', ?, ?, ?, ?)
         """, (fund_date, source, amount_SAR, amount_USD, rate_exchange))
         conn.commit()
+        insert_log(conn, cursor, "deposit_funds", f"Deposit of {amount_SAR} SAR and {amount_USD} USD on {fund_date} from {source} inserted.")
         conn.close()
         console.print("[green]Funds deposit inserted successfully.[/green]")
     except sqlite3.Error as e:
@@ -181,6 +202,7 @@ def withdraw_funds(fund_date, source, amount_SAR, amount_USD, rate_exchange, set
             VALUES (?, 'withdraw', ?, ?, ?, ?)
         """, (fund_date, source, amount_SAR, amount_USD, rate_exchange))
         conn.commit()
+        insert_log(conn, cursor, "withdraw_funds", f"Withdraw of {amount_SAR} SAR and {amount_USD} USD on {fund_date} from {source} inserted.")
         conn.close()
         console.print("[green]Funds withdraw inserted successfully.[/green]")
     except sqlite3.Error as e:

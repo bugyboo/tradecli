@@ -33,6 +33,15 @@ CREATE TABLE TRADES (
 );
 """
 
+schema_logs_sql = """
+CREATE TABLE LOGS (
+    ID INTEGER PRIMARY KEY AUTOINCREMENT,
+    log_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    log_oper TEXT NOT NULL,
+    log_details TEXT NOT NULL
+);
+"""
+
 def migrate_db( account_name: str ):
     print("Starting database schema operations...", sqlite3.sqlite_version)
 
@@ -46,6 +55,7 @@ def migrate_db( account_name: str ):
         # Create the database and tables
         create_funds_table( account_name )
         create_trades_table( account_name )
+        create_logs_table( account_name )
         
         print("DB created successfully.")
     except FileNotFoundError:
@@ -93,7 +103,27 @@ def create_trades_table( account_name: str):
     except sqlite3.Error as e:
         print(f"Database error: {e}")
         input("Press Enter to continue...")
-    
+        
+def create_logs_table( account_name: str):
+    try:
+        db_path = get_db_path(account_name)
+        # Open a connection to a SQLite database (creates the file if it doesn't exist)
+        conn = sqlite3.connect(db_path)
+
+        # Create a cursor object to execute SQL commands
+        cursor = conn.cursor()        
+
+        # Execute the schema SQL
+        cursor.executescript(schema_logs_sql)
+
+        # Commit the changes and close the connection
+        conn.commit()
+        conn.close()
+
+        print("Logs table created successfully.")    
+    except sqlite3.Error as e:
+        print(f"Database error: {e}")
+        input("Press Enter to continue...")    
 
 def check_and_migrate( settings: Settings ):
     db_path = get_db_path( settings.default_account )
@@ -115,5 +145,11 @@ def check_and_migrate( settings: Settings ):
         print("TRADES table not found. Running migration...")
         conn.close()
         create_trades_table( settings.default_account )
+        return
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='LOGS'")
+    if not cursor.fetchone():
+        print("LOGS table not found. Running migration...")
+        conn.close()
+        create_logs_table( settings.default_account )
         return
     conn.close()

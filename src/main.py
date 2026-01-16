@@ -84,6 +84,17 @@ def main():
             HAVING net_shares != 0
             """)
             tickers = cursor.fetchall()
+            
+            # Last log date
+            try:
+                cursor.execute("SELECT log_date FROM LOGS ORDER BY log_date DESC LIMIT 1")
+                last_log = cursor.fetchone()
+                if last_log:
+                    last_log_date = last_log[0]
+                else:
+                    last_log_date = "No logs available"
+            except sqlite3.Error:
+                last_log_date = "No logs available"
 
             # Initialize current prices with last price
             if not current_prices or selected_ticker not in current_prices:
@@ -121,7 +132,7 @@ def main():
 
             # Trades table
             if trades:
-                trades_table = Table(title="Open Positions")
+                trades_table = Table(title="Open Positions [dim](Version 1.6)[/dim]")
                 trades_table.add_column("#", style="yellow")            
                 trades_table.add_column("Date", style="dim")
                 trades_table.add_column("Ticker", style="cyan")
@@ -170,7 +181,7 @@ def main():
                 
 
             # Ticker summary table
-            table = Table(title="Summary of Holdings [dim](Version 0.1.5)[/dim]")
+            table = Table(title=f"Summary of Holdings [dim](Last Log: {last_log_date})[/dim]")
             table.add_column("Ticker", style="cyan")
             table.add_column("Shares", justify="right")
             table.add_column("Total Cost", justify="right")
@@ -194,7 +205,7 @@ def main():
             console.print(table)
                 
             # Account Totals table
-            totals_table = Table(title=f"Account Totals ([cyan]{settings.default_account}[/cyan]) [dim]{settings.get_account().exchange_rate_label} {settings.get_account().exchange_rate}[/dim]")
+            totals_table = Table(title=f"Account Totals ([cyan]{settings.default_account}[/cyan]) [dim]{settings.get_account().exchange_rate_label} {settings.get_account().exchange_rate} ({settings.get_account().created_at})[/dim]")
             totals_table.add_column("Funds", justify="right")
             totals_table.add_column(f"Cash [dim]{cash_ratio:.2%}[/dim]", justify="right", style="magenta")
             totals_table.add_column("Fees", justify="right")
