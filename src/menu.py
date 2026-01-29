@@ -23,7 +23,7 @@ def main_menu(settings: Settings, settings_path: str):
     console = Console()
     try:
         # Show main menu
-        console.print("[blue]Options:[/blue] A[dim]ccount[/dim], R[dim]eset Data[/dim], L[dim]oad Data[/dim], F[dim]unds[/dim], D[dim]eposit[/dim], W[dim]ithdraw[/dim], P[dim]osition[/dim] or S[dim]ettings[/dim]")
+        console.print("[blue]Options:[/blue] A[dim]ccount[/dim], R[dim]eset Data[/dim], I[dim]mport Data[/dim], F[dim]unds[/dim], D[dim]eposit[/dim], W[dim]ithdraw[/dim], P[dim]osition[/dim], L[dim]ogs[/dim] or S[dim]ettings[/dim]")
         choicee = input("Enter choice: ").strip().lower()
         if choicee == 'a':
             # Change account
@@ -68,7 +68,7 @@ def main_menu(settings: Settings, settings_path: str):
             except Exception as e:
                 console.print(f"[red]Error during migration: {e}[/red]")
             input("Press Enter to continue...")
-        elif choicee == 'l':
+        elif choicee == 'i':
             # Funds deposit/withdraw/trades load_data.py
             load_data.main()
             console.print("[green]Funds/trades operation completed.[/green]")
@@ -182,11 +182,11 @@ def main_menu(settings: Settings, settings_path: str):
     Symbol: {symbol}
     Operation: {opr} ({is_position_open_text})
     Quantity: {filled_qty}
-    Price: ${price:,.2f}
-    Fees: ${fees:,.2f}
-    VAT: ${vat:,.2f}
-    Cost Value: ${cost_value:,.2f}
-    Profit/Loss: ${profit_loss:,.2f}
+    Price: ${price}
+    Fees: ${fees}
+    VAT: ${vat}
+    Cost Value: ${cost_value}
+    Profit/Loss: ${profit_loss}
                     """)
                     console.print("[blue]Options for Trade:[/blue] C[dim]lose Position,[/dim] O[dim]pen Position[/dim], E[dim]dit position or[/dim] Enter [dim]to go back[/dim]")
                     mark_pos_input = input("Enter choice: ").strip().lower()
@@ -225,6 +225,28 @@ def main_menu(settings: Settings, settings_path: str):
             else:
                 console.print("[red]Invalid Trade ID input.[/red]")
             conn.close()
+            input("Press Enter to continue...")
+            
+        elif choicee == 'l':
+            conn = sqlite3.connect(get_db_path( settings.default_account ))
+            cursor = conn.cursor()
+            cursor.execute("SELECT ID, log_date, log_oper, log_details FROM LOGS ORDER BY ID LIMIT 200")
+            logs = cursor.fetchall()
+            conn.close()
+            if logs:
+                logs_table = Table(title="Recent Logs")
+                logs_table.add_column("#", style="yellow")
+                logs_table.add_column("Date", style="dim")
+                logs_table.add_column("Operation", style="cyan")
+                logs_table.add_column("Details")
+
+                for log in logs:
+                    ID, log_date, log_oper, log_details = log
+                    logs_table.add_row(str(ID), str(log_date), log_oper, log_details)
+
+                console.print(logs_table)
+            else:
+                console.print("No logs found.")
             input("Press Enter to continue...")
             
         elif choicee == 's':

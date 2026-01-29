@@ -6,14 +6,16 @@
             "exchange_rate_label": "AED",
             "exchange_rate": 3.6,
             "selected_ticker": "$QQQ",
-            "fees_usd": 2.08
+            "fees_usd": 2.08,
+            "created_at": ""
         },
         {
             "name": "traders",
             "exchange_rate_label": "SAR",
             "exchange_rate": 3.7468,
             "selected_ticker": "$TSLA",
-            "fees_usd": 2.08
+            "fees_usd": 2.08,
+            "created_at": ""
         }
     ]
 }
