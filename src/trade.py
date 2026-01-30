@@ -56,7 +56,7 @@ def buy_trade(trade_date, symbol, filled_qty, price, fees=0.0, vat=0.0, cost_val
             VALUES (?, ?, 'buy', ?, ?, ?, ?, ?, 0, 1)
         """, (trade_date, symbol, filled_qty, price, fees, vat, cost_value))
         conn.commit()
-        insert_log(conn, cursor, "buy_trade", f"Buy trade for {symbol} with {filled_qty} on {trade_date} inserted.")
+        insert_log(conn, cursor, "buy_trade", f"Buy trade for {symbol} with {filled_qty} at {price} on {trade_date} inserted.")
         conn.close()
         console.print("[green]Buy trade saved successfully.[/green]")
     except sqlite3.Error as e:
@@ -75,7 +75,7 @@ def sell_trade(trade_date, symbol, filled_qty, price, fees=0.0, vat=0.0, cost_va
             VALUES (?, ?, 'sell', ?, ?, ?, ?, ?, ?, 0)
         """, (trade_date, symbol, filled_qty, price, fees, vat, cost_value, profit_loss))
         conn.commit()
-        insert_log(conn, cursor, "sell_trade", f"Sell trade for {symbol} with {filled_qty} on {trade_date} inserted.")
+        insert_log(conn, cursor, "sell_trade", f"Sell trade for {symbol} with {filled_qty} at {price} on {trade_date} inserted.")
         conn.close()
         console.print("[green]Sell trade saved successfully.[/green]")
         if close_position:

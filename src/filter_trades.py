@@ -31,14 +31,18 @@ def filter_menu(settings: Settings=Settings(), current_prices={}):
                 continue
             cursor.execute("SELECT ID, trade_date, symbol, opr, filled_qty, price, cost_value, profit_loss, is_position_open FROM TRADES WHERE price >= ? AND price <= ? ORDER BY price", (price_start, price_end))
         elif opr_filter == 'd':
-            month_year_str = input("Enter month and year to filter (MM/YYYY) or (YYYY): ").strip()
+            month_year_str = input("Enter day or month and year to filter (DD/MM/YYYY) or (MM/YYYY) or (YYYY): ").strip()
             try:
                 if month_year_str and len(month_year_str) == 4:
                     cursor.execute("SELECT ID, trade_date, symbol, opr, filled_qty, price, cost_value, profit_loss, is_position_open FROM TRADES WHERE SUBSTR(trade_date, 7, 4) = ? ORDER BY price", (month_year_str,))
-                else:
+                elif month_year_str and len(month_year_str) == 7:
                     month_year = datetime.strptime(month_year_str, "%m/%Y")
                     month_year_str = month_year.strftime("%m/%Y")
                     cursor.execute("SELECT ID, trade_date, symbol, opr, filled_qty, price, cost_value, profit_loss, is_position_open FROM TRADES WHERE SUBSTR(trade_date, 4, 7) = ? ORDER BY price", (month_year_str,))
+                else:
+                    day_month_year = datetime.strptime(month_year_str, "%d/%m/%Y")
+                    day_month_year_str = day_month_year.strftime("%d/%m/%Y")
+                    cursor.execute("SELECT ID, trade_date, symbol, opr, filled_qty, price, cost_value, profit_loss, is_position_open FROM TRADES WHERE trade_date = ? ORDER BY price", (day_month_year_str,))
             except ValueError:
                 console.print(f"[red]Invalid month/year format.[/red]")
                 input("Press Enter to continue...")
