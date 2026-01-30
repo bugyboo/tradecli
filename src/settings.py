@@ -11,8 +11,38 @@ class Account:
     exchange_rate_label: str = "SAR"
     exchange_rate: float = 3.7487
     selected_ticker: str = "$TSLA"
-    fees_usd: float = 2.08
-    created_at: str = ""   
+    commission_rate: float = 0.0
+    per_share_commission: float = 0.014
+    minimum_commission: float = 1.8
+    vat_rate: float = 0.15 
+    created_at: str = ""
+    
+    def calculate_trade_commission(self, trade_value_usd: float, shares_traded: int) -> float:
+        if self.per_share_commission > 0:
+            commission = shares_traded * self.per_share_commission
+            if self.minimum_commission > 0 and commission < self.minimum_commission:
+                commission = self.minimum_commission
+            else:
+                commission = commission
+            total_commission = commission
+            return total_commission
+        else:
+            commission = trade_value_usd * self.commission_rate
+            if self.minimum_commission > 0:
+                if commission < self.minimum_commission:
+                    commission = self.minimum_commission
+                else:
+                    commission = commission
+            else:
+                commission = commission
+            total_commission = commission
+            return total_commission
+
+    def calculate_trade_commission_total(self, trade_value_usd: float, shares_traded: int) -> float:
+        commission = self.calculate_trade_commission(trade_value_usd, shares_traded)
+        vat_amount = commission * self.vat_rate
+        total_commission = commission + vat_amount
+        return total_commission
 
 @dataclass
 class Settings:
@@ -82,9 +112,12 @@ def load_settings(settings_path: str) -> Settings:
             scar_input = input(f"Enter USD to {scar_label} exchange rate: ").strip()
             scar = float(scar_input) or 3.7487     
             selected_ticker = input("Enter default ticker symbol to track (e.g., $TSLA): ").strip().upper() or "$TSLA"
-            fees_usd = float(input("Enter per trade fees in USD (default 2.08): ").strip() or 2.08)
+            commission_rate = float(input("Enter commission rate (default 0.0): ").strip() or 0.0)
+            per_share_commission = float(input("Enter per share commission (default 0.014): ").strip() or 0.014)
+            minimum_commission = float(input("Enter minimum commission (default 1.8): ").strip() or 1.8)
+            vat_rate = float(input("Enter VAT rate (default 0.15): ").strip() or 0.15)
             created_at = datetime.now().strftime("%Y-%m-%d %H:%M")
-            account = Account(name=account_name, exchange_rate=scar, exchange_rate_label=scar_label, selected_ticker=selected_ticker, fees_usd=fees_usd, created_at=created_at)           
+            account = Account(name=account_name, exchange_rate=scar, exchange_rate_label=scar_label, selected_ticker=selected_ticker, commission_rate=commission_rate, per_share_commission=per_share_commission, minimum_commission=minimum_commission, vat_rate=vat_rate, created_at=created_at)           
             settings = Settings(default_account=account_name, accounts=[account])
             settings.save(settings_path)
             return settings

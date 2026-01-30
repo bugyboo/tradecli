@@ -6,7 +6,10 @@
             "exchange_rate_label": "AED",
             "exchange_rate": 3.6,
             "selected_ticker": "$QQQ",
-            "fees_usd": 2.08,
+            "commission_rate": 0.0,
+            "per_share_commission": 0.014,
+            "minimum_commission": 1.8,
+            "vat_rate": 0.15,
             "created_at": ""
         },
         {
@@ -14,8 +17,11 @@
             "exchange_rate_label": "SAR",
             "exchange_rate": 3.7468,
             "selected_ticker": "$TSLA",
-            "fees_usd": 2.08,
-            "created_at": ""
+            "commission_rate": 0.0,
+            "per_share_commission": 0.014,
+            "minimum_commission": 1.8,
+            "vat_rate": 0.15,
+            "created_at": "2026-01-30 14:02"
         }
     ]
 }

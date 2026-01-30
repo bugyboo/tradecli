@@ -29,7 +29,7 @@ def main_menu(settings: Settings, settings_path: str):
             # Change account
             console.print("Available Accounts:")
             for idx, acc in enumerate(settings.accounts):
-                console.print(f"{idx + 1}. {acc.name} (Exchange Rate: {acc.exchange_rate} {acc.exchange_rate_label}, Ticker: {acc.selected_ticker}, Fees: ${acc.fees_usd})")
+                console.print(f"{idx + 1}. {acc.name} (Exchange Rate: {acc.exchange_rate} {acc.exchange_rate_label}, Ticker: {acc.selected_ticker}, Fees: ${acc.commission_rate}|{acc.per_share_commission}|{acc.minimum_commission}|{acc.vat_rate})")
             console.print("[blue]Options[/blue] [dim]Enter account[/dim] number [dim]to select or[/dim] N. [dim]Create New Account[/dim]")
             acc_choice = input("Enter choice: ").strip().lower()
             if acc_choice == 'n':
@@ -251,11 +251,17 @@ def main_menu(settings: Settings, settings_path: str):
             
         elif choicee == 's':
             sar = float(input(f"Enter USD to {settings.get_account().exchange_rate_label} exchange rate (current {settings.get_account().exchange_rate}): ").strip() or settings.get_account().exchange_rate)
-            fees_usd = float(input(f"Enter per trade fees in USD (current {settings.get_account().fees_usd}): ").strip() or settings.get_account().fees_usd)
+            commission_rate = float(input(f"Enter commission rate (current {settings.get_account().commission_rate}): ").strip() or settings.get_account().commission_rate)
+            per_share_commission = float(input(f"Enter per share commission (current {settings.get_account().per_share_commission}): ").strip() or settings.get_account().per_share_commission)
+            minimum_commission = float(input(f"Enter minimum commission (current {settings.get_account().minimum_commission}): ").strip() or settings.get_account().minimum_commission)
+            vat_rate = float(input(f"Enter VAT rate (current {settings.get_account().vat_rate}): ").strip() or settings.get_account().vat_rate)
             selected_ticker = input(f"Enter ticker symbol to track (current {settings.get_account().selected_ticker}): ").strip().upper() or settings.get_account().selected_ticker
             settings.get_account().selected_ticker = selected_ticker
-            settings.get_account().fees_usd = fees_usd
             settings.get_account().exchange_rate = sar
+            settings.get_account().commission_rate = commission_rate
+            settings.get_account().per_share_commission = per_share_commission
+            settings.get_account().minimum_commission = minimum_commission
+            settings.get_account().vat_rate = vat_rate
             settings.get_account().created_at = datetime.now().strftime("%Y-%m-%d %H:%M")
             settings.save(settings_path)
             console.print(f"[green]Settings updated.[/green]")

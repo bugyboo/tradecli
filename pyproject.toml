@@ -1,6 +1,6 @@
 [project]
 name = "tradercli"
-version = "0.1.4"
+version = "0.1.8"
 description = ""
 authors = [
     {name = "dev",email = "yasser.harbi@gmail.com"}

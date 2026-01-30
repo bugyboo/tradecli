@@ -132,7 +132,7 @@ def main():
 
             # Trades table
             if trades:
-                trades_table = Table(title="Open Positions [dim](Version 1.7)[/dim]")
+                trades_table = Table(title="Open Positions [dim](Version 1.8)[/dim]")
                 trades_table.add_column("#", style="yellow")            
                 trades_table.add_column("Date", style="dim")
                 trades_table.add_column("Ticker", style="cyan")
@@ -149,17 +149,20 @@ def main():
                 total_cost_value = 0
                 sub_pl = 0
                 for trade in trades:
-                    ID, trade_date, symbol, opr, filled_qty, price, fees, vat, cost_value, profit_loss = trade
+                    ID, trade_date, symbol, opr, filled_qty, price, fees, vat, cost_value, profit_loss = trade                    
                     current_price = current_prices.get(symbol, price)
+                    current_value = current_price * filled_qty
+                    current_value = current_value - settings.get_account().calculate_trade_commission_total(current_value, filled_qty)
                     if opr.lower() == 'buy':
-                        pl = ( (current_price - price) * filled_qty ) - settings.get_account().fees_usd * 2
+                        pl = current_value - cost_value
+                        cost_value = cost_value + settings.get_account().calculate_trade_commission_total(cost_value, filled_qty)
                     else:
                         pl = profit_loss or 0
                     pl_text = f"[red]${pl:,.2f}[/red]" if pl < 0 else f"${pl:,.2f}"
                     pl_text_percent = (pl / cost_value) if cost_value != 0 else 0
                     pl_text_sar = f"[red]{pl * settings.get_account().exchange_rate:,.2f}[/red]" if pl < 0 else f"{pl * settings.get_account().exchange_rate :,.2f}"
                     opr_text = f"[green]{opr}[/green]" if opr.lower() == 'buy' else f"[red]{opr}[/red]"
-                    trades_table.add_row(str(counter), str(trade_date), symbol, f"{opr_text} #{str(ID)}", str(filled_qty), f"${price:,.2f}", f"${cost_value:,.2f}", f"{(cost_value + settings.get_account().fees_usd) / filled_qty :,.2f}", F"{pl_text} [dim]{pl_text_percent:.2%}[/dim]", pl_text_sar)
+                    trades_table.add_row(str(counter), str(trade_date), symbol, f"{opr_text} #{str(ID)}", str(filled_qty), f"${price:,.2f}", f"${cost_value:,.2f}", f"{cost_value / filled_qty :,.2f}", F"{pl_text} [dim]{pl_text_percent:.2%}[/dim]", pl_text_sar)
                     counter += 1
                     total_qty += filled_qty
                     total_cost_value += cost_value
@@ -199,7 +202,8 @@ def main():
                 unrealized_text_sar = f"[red]{settings.get_account().exchange_rate_label} {unrealized_pl * settings.get_account().exchange_rate:,.2f}[/red]" if unrealized_pl < 0 else f"{settings.get_account().exchange_rate_label} {unrealized_pl * settings.get_account().exchange_rate:,.2f}"            
                 profit_text = f"[red]${profit:,.2f}[/red]" if profit < 0 else f"${profit:,.2f}"
                 profit_text_sar = f"[red]{settings.get_account().exchange_rate_label} {profit * settings.get_account().exchange_rate:,.2f}[/red]" if profit < 0 else f"{settings.get_account().exchange_rate_label} {profit * settings.get_account().exchange_rate:,.2f}"
-                oversee_pl = oversee_shares * (oversee_price - current_price) - (settings.get_account().fees_usd * 2)
+                commission = settings.get_account().calculate_trade_commission_total((oversee_price - current_price), oversee_shares)
+                oversee_pl = oversee_shares * (oversee_price - current_price) - (commission * 2)
                 table.add_row(symbol, str(net_shares), f"${total_cost:,.2f}", f"${market_value:,.2f}", unrealized_text, profit_text, f"{unrealized_pl/total_funds:.2%}", f"{oversee_shares} x {oversee_price:,.2f}")
                 table.add_row(f"[magenta]{current_price:,.2f}[/magenta]", "", f"{settings.get_account().exchange_rate_label} {total_cost * settings.get_account().exchange_rate:,.2f}", f"{settings.get_account().exchange_rate_label} {market_value * settings.get_account().exchange_rate:,.2f}", unrealized_text_sar, profit_text_sar, f"{total_cost/net_shares:.2f}", f"{oversee_pl:,.2f}")
             console.print(table)

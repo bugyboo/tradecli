@@ -217,18 +217,20 @@ def buy_menu(selected_ticker, current_prices, total_cash, settings=Settings()):
         price = float(price_str or current_prices.get(symbol, 0))                
         max_qty = int(total_cash / price)
         filled_qty = int(input(f"Enter Quantity (Max {max_qty}) = ").strip() or max_qty)
-        fees = float(input("Enter Fees (default 1.8) = ").strip() or 1.8)
-        vat = float(input("Enter VAT (default 0.27) = ").strip() or 0.27)
+        commission = settings.get_account().calculate_trade_commission(price * filled_qty, filled_qty)
+        vat = commission * settings.get_account().vat_rate
+        fees = float(input(f"Enter Fees (default {commission:.6f}) = ").strip() or commission)
+        vat = float(input(f"Enter VAT (default {vat:.6f}) = ").strip() or vat)
         trade_date = input("Enter Trade Date (DD/MM/YYYY) = ").strip() or datetime.today().strftime("%d/%m/%Y")                
         cost_value = filled_qty * price + fees + vat
         
         if cost_value > total_cash:
-            console.print(f"[red]Error: Insufficient cash to execute this buy trade. Available cash: ${total_cash:,.2f}, Required: ${cost_value:,.2f}[/red]")
+            console.print(f"[red]Error: Insufficient cash to execute this buy trade. Available cash: ${total_cash:,.4f}, Required: ${cost_value:,.6f}[/red]")
             input("Press Enter to continue...")
             return
         
         # show confirmation
-        console.print(f"Confirm [green]Buy[/green]: {filled_qty} shares of {symbol} at ${price:.2f}. Total cost: ${cost_value:.2f} | {settings.get_account().exchange_rate_label} {cost_value * settings.get_account().exchange_rate:.2f}")
+        console.print(f"Confirm [green]Buy[/green]: {filled_qty} shares of {symbol} at ${price:.4f}. Total cost: ${cost_value:.6f} | {settings.get_account().exchange_rate_label} {cost_value * settings.get_account().exchange_rate:.4f}")
         console.print(f"[red]No[/red] [dim]to cancel[/dim], Enter to [green]confirm[/green]...")
         confirm = input("").strip().lower()
         if confirm == 'no':
@@ -252,9 +254,7 @@ def sell_menu(ticker_data, trades, selected_ticker, current_prices, settings=Set
     try:
         symbol = input(f"Enter Symbol or {selected_ticker} = ").strip().upper() or selected_ticker
         price_str = input(f"Enter Price ({current_prices.get(symbol, 0)}) = ").strip()
-        price = float(price_str or current_prices.get(symbol, 0))
-        fees = float(input("Enter Fees (default 1.8) = ").strip() or 1.8)
-        vat = float(input("Enter VAT (default 0.27) = ").strip() or 0.27)                
+        price = float(price_str or current_prices.get(symbol, 0))              
         # calculate profit/loss from open position if applicable
         close_position = input("Close Positions [Buy ID] (comma separated) or (press Enter to skip): ").strip() or None
         if close_position:            
@@ -273,12 +273,20 @@ def sell_menu(ticker_data, trades, selected_ticker, current_prices, settings=Set
                 return            
 
             filled_qty = sum(trade[4] for trade in selected_trades)
-            buy_cost_value = sum(trade[8] for trade in selected_trades)                                               
+            buy_cost_value = sum(trade[8] for trade in selected_trades)
+            commission = settings.get_account().calculate_trade_commission(buy_cost_value, filled_qty)
+            vat = commission * settings.get_account().vat_rate
+            fees = float(input(f"Enter Fees (default {commission:.6f}) = ").strip() or commission)
+            vat = float(input(f"Enter VAT (default {vat:.6f}) = ").strip() or vat)                                                           
             profit_loss = ( (price * filled_qty ) - (fees + vat) ) - ( buy_cost_value )
         else:                                                                               
             filled_qty = int(input("Enter Quantity = ").strip())
             profit_loss = input("Enter Profit/Loss = ").strip() or 0.0
             profit_loss = float(profit_loss)
+            commission = settings.get_account().calculate_trade_commission(price * filled_qty, filled_qty)
+            vat = commission * settings.get_account().vat_rate
+            fees = float(input(f"Enter Fees (default {commission:.6f}) = ").strip() or commission)
+            vat = float(input(f"Enter VAT (default {vat:.6f}) = ").strip() or vat)             
             # Check if enough shares to sell from ticker data
             ticker_info = next((row for row in ticker_data if row[0] == symbol), None)
             if not ticker_info or ticker_info[1] < filled_qty:
@@ -290,8 +298,8 @@ def sell_menu(ticker_data, trades, selected_ticker, current_prices, settings=Set
         trade_date = input("Enter Trade Date (DD/MM/YYYY) = ").strip() or datetime.today().strftime("%d/%m/%Y")           
             
         cost_value = (filled_qty * price) - (fees + vat)
-        sell_pl_text = f"[red]${profit_loss:,.2f}[/red]" if profit_loss < 0 else f"[green]${profit_loss:,.2f}[/green]"
-        console.print(f"Confirm [red]Sell[/red]: [green]{filled_qty}[/green] shares of [cyan]{symbol}[/cyan] at [yellow]${price:.2f}[/yellow]. Total Value: ${cost_value:.2f} {settings.get_account().exchange_rate_label} {cost_value * settings.get_account().exchange_rate:.2f} | Profit/Loss: {sell_pl_text} {settings.get_account().exchange_rate_label} {profit_loss * settings.get_account().exchange_rate:.2f}")
+        sell_pl_text = f"[red]${profit_loss:,.4f}[/red]" if profit_loss < 0 else f"[green]${profit_loss:,.4f}[/green]"
+        console.print(f"Confirm [red]Sell[/red]: [green]{filled_qty}[/green] shares of [cyan]{symbol}[/cyan] at [yellow]${price:.4f}[/yellow]. Total Value: ${cost_value:.6f} {settings.get_account().exchange_rate_label} {cost_value * settings.get_account().exchange_rate:.2f} | Profit/Loss: {sell_pl_text} {settings.get_account().exchange_rate_label} {profit_loss * settings.get_account().exchange_rate:.6f}")
         console.print(f"[red]No[/red] [dim]to cancel[/dim], Enter to [green]confirm[/green]...")
         confirm = input("").strip().lower()
         if confirm == 'no':
