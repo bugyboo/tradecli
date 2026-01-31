@@ -4,6 +4,7 @@ A command-line interface (CLI) application for managing and tracking stock trade
 
 ![Main Interface](images/main.png)
 ![Funds Interface](images/funds.png)
+![Chart Interface](images/tradercli_chart.png)
 
 ## Features
 
@@ -28,6 +29,7 @@ A command-line interface (CLI) application for managing and tracking stock trade
 - **Trade Filtering**: Filter and search through trade history
 - **Risk Management Planner**: Plan risk scenarios with technical levels and drawdown calculations
 - **Calculator**: Built-in percentage and currency conversion calculator
+- **Chart**: Visualize trade history for a stock symbol with a vertical chart showing price on the X-axis and time on the Y-axis, with options for price range filtering and current price display
 
 ### Multi-Account Support
 - Create and manage multiple trading accounts
