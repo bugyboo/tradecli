@@ -3,6 +3,7 @@ from utils import get_db_path
 from rich.console import Console
 from rich.panel import Panel
 from settings import Settings
+from chart import show_chart_menu
 
 def get_open_positions(ticker, account_name):
     """
@@ -111,9 +112,9 @@ def plan( ticker, current_price, settings: Settings ):
     
 def plan_menu(trades, selected_ticker, current_prices, settings: Settings):
     console = Console()
-    console.print("[blue]Plan Options:[/blue] C[dim]alculate exit price or[/dim] Enter [dim]to go to planning[/dim]")
+    console.print("[blue]Plan Options:[/blue] C[dim]hart[/dim], E[dim]xit price or[/dim] Enter [dim]to go to planning[/dim]")
     plan_choice = input(f"Enter choice: ").strip().lower()
-    if plan_choice == 'c':
+    if plan_choice == 'e':
         # Calculate exit price
         try:
             # enter trade Id's to calculate exit price form open positions
@@ -147,6 +148,10 @@ def plan_menu(trades, selected_ticker, current_prices, settings: Settings):
             console.print(f"[red]Invalid input: {e}[/red]")
         except KeyboardInterrupt:
             console.print("\n[red]Exit price calculation cancelled by user.[/red]")
+        input("Press Enter to continue...")
+    elif plan_choice == 'c':
+        # Show chart (placeholder)
+        show_chart_menu(current_prices[selected_ticker], settings)
         input("Press Enter to continue...")
     else:
         # Go to planning

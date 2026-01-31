@@ -1,10 +1,13 @@
 # -*- mode: python ; coding: utf-8 -*-
+from PyInstaller.utils.hooks import collect_all
+
+rich_datas, rich_binaries, rich_hiddenimports = collect_all('rich')
 
 a = Analysis(
     ['src/main.py'],
     pathex=['.', 'src'],  # Added 'src' to pathex to locate modules in src/ directory
-    binaries=[],
-    datas=[('schema.sql', '.')],
+    binaries=rich_binaries,
+    datas=[('schema.sql', '.')] + rich_datas,
     hiddenimports=[
         'trade',
         'load_data',
@@ -16,10 +19,11 @@ a = Analysis(
         'filter_trades',
         'menu',
         'calculator',
+        'chart',
         'pandas',
         'openpyxl',
         'rich',
-    ],
+    ] + rich_hiddenimports,
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
