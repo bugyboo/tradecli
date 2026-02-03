@@ -217,9 +217,13 @@ def buy_menu(selected_ticker, current_prices, total_cash, settings=Settings()):
         price = float(price_str or current_prices.get(symbol, 0))                
         max_qty = int(total_cash / price)
         filled_qty = int(input(f"Enter Quantity (Max {max_qty}) = ").strip() or max_qty)
+        if filled_qty < 1:
+            console.print("[red]Error: Quantity must be at least 1.[/red]")
+            input("Press Enter to continue...")
+            return
         commission = settings.get_account().calculate_trade_commission(price * filled_qty, filled_qty)
-        vat = commission * settings.get_account().vat_rate
         fees = float(input(f"Enter Fees (default {commission:.6f}) = ").strip() or commission)
+        vat = fees * settings.get_account().vat_rate        
         vat = float(input(f"Enter VAT (default {vat:.6f}) = ").strip() or vat)
         trade_date = input("Enter Trade Date (DD/MM/YYYY) = ").strip() or datetime.today().strftime("%d/%m/%Y")                
         cost_value = filled_qty * price + fees + vat
@@ -275,17 +279,21 @@ def sell_menu(ticker_data, trades, selected_ticker, current_prices, settings=Set
             filled_qty = sum(trade[4] for trade in selected_trades)
             buy_cost_value = sum(trade[8] for trade in selected_trades)
             commission = settings.get_account().calculate_trade_commission(buy_cost_value, filled_qty)
-            vat = commission * settings.get_account().vat_rate
             fees = float(input(f"Enter Fees (default {commission:.6f}) = ").strip() or commission)
+            vat = fees * settings.get_account().vat_rate            
             vat = float(input(f"Enter VAT (default {vat:.6f}) = ").strip() or vat)                                                           
             profit_loss = ( (price * filled_qty ) - (fees + vat) ) - ( buy_cost_value )
         else:                                                                               
             filled_qty = int(input("Enter Quantity = ").strip())
+            if filled_qty < 1:
+                console.print("[red]Error: Quantity must be at least 1.[/red]")
+                input("Press Enter to continue...")
+                return
             profit_loss = input("Enter Profit/Loss = ").strip() or 0.0
             profit_loss = float(profit_loss)
             commission = settings.get_account().calculate_trade_commission(price * filled_qty, filled_qty)
-            vat = commission * settings.get_account().vat_rate
             fees = float(input(f"Enter Fees (default {commission:.6f}) = ").strip() or commission)
+            vat = fees * settings.get_account().vat_rate            
             vat = float(input(f"Enter VAT (default {vat:.6f}) = ").strip() or vat)             
             # Check if enough shares to sell from ticker data
             ticker_info = next((row for row in ticker_data if row[0] == symbol), None)

@@ -30,7 +30,7 @@ def main_menu(settings: Settings, settings_path: str):
             console.print("Available Accounts:")
             for idx, acc in enumerate(settings.accounts):
                 console.print(f"{idx + 1}. {acc.name} (Exchange Rate: {acc.exchange_rate} {acc.exchange_rate_label}, Ticker: {acc.selected_ticker}, Fees: ${acc.commission_rate}|{acc.per_share_commission}|{acc.minimum_commission}|{acc.vat_rate})")
-            console.print("[blue]Options[/blue] [dim]Enter account[/dim] number [dim]to select or[/dim] N. [dim]Create New Account[/dim]")
+            console.print("[blue]Options[/blue] [dim]Enter account[/dim] number [dim]to select[/dim] D[dim]elete or[/dim]  N. [dim]Create New Account[/dim]")
             acc_choice = input("Enter choice: ").strip().lower()
             if acc_choice == 'n':
                 account_name = input("Enter account name (no spaces or special characters): ").strip()
@@ -42,6 +42,30 @@ def main_menu(settings: Settings, settings_path: str):
                 console.print(f"[green]New account '{account_name}' created and set as default.[/green]")
                 settings = load_settings(settings_path)  # Reload settings
                 migrate.check_and_migrate( settings ) 
+                input("Press Enter to continue...")
+            elif acc_choice == 'd':
+                del_index = input("Enter account number to delete: ").strip()
+                try:
+                    del_index_int = int(del_index) - 1
+                    if 0 <= del_index_int < len(settings.accounts):
+                        del_account_name = settings.accounts[del_index_int].name
+                        confirm = input(f"Are you sure you want to delete account '{del_account_name}'? This action cannot be undone. (y/n): ").strip().lower()
+                        if confirm == 'y':
+                            # Remove account
+                            settings.accounts.pop(del_index_int)
+                            # If deleted account was default, reset default_account
+                            if settings.default_account == del_account_name:
+                                settings.default_account = settings.accounts[0].name if settings.accounts else ""
+                            settings.save(settings_path)
+                            console.print(f"[green]Account '{del_account_name}' deleted.[/green]")
+                            settings = load_settings(settings_path)  # Reload settings
+                            migrate.check_and_migrate( settings )
+                        else:
+                            console.print("[yellow]Account deletion cancelled.[/yellow]")
+                    else:
+                        console.print("[red]Invalid account selection.[/red]")
+                except ValueError:
+                    console.print("[red]Invalid input.[/red]")
                 input("Press Enter to continue...")
             else:
                 try:
@@ -144,6 +168,10 @@ def main_menu(settings: Settings, settings_path: str):
                 source = input("Enter source: ").strip()
                 amount_SAR = float(input(f"Enter amount in {settings.get_account().exchange_rate_label}: ").strip())
                 amount_USD = float(input("Enter amount in USD: ").strip())
+                if amount_USD <= 0 or amount_SAR <= 0:
+                    console.print("[red]Error: Amounts must be positive and non-zero.[/red]")
+                    input("Press Enter to continue...")
+                    return
                 rate_exchange = amount_SAR / amount_USD
                 deposit_funds(fund_date, source, amount_SAR, amount_USD, rate_exchange, settings=settings)
 
@@ -157,6 +185,10 @@ def main_menu(settings: Settings, settings_path: str):
                 source = input("Enter source: ").strip()
                 amount_SAR = float(input(f"Enter amount in {settings.get_account().exchange_rate_label}: ").strip())
                 amount_USD = float(input("Enter amount in USD: ").strip())
+                if amount_USD <= 0 or amount_SAR <= 0:
+                    console.print("[red]Error: Amounts must be positive and non-zero.[/red]")
+                    input("Press Enter to continue...")
+                    return
                 rate_exchange = amount_SAR / amount_USD
                 withdraw_funds(fund_date, source, amount_SAR, amount_USD, rate_exchange, settings=settings)
 
@@ -216,7 +248,8 @@ def main_menu(settings: Settings, settings_path: str):
                             new_vat = float(input(f"Enter new VAT (current {vat}): ").strip() or vat)
                             new_cost_value = float(input(f"Enter new cost value (current {cost_value}): ").strip() or cost_value)
                             new_profit_loss = float(input(f"Enter new profit/loss (current {profit_loss}): ").strip() or profit_loss)
-                            update_trade(trade_id, filled_qty=new_filled_qty, price=new_price, fees=new_fees, vat=new_vat, cost_value=new_cost_value, profit_loss=new_profit_loss, settings=settings)
+                            new_date = input(f"Enter new trade date (current {trade_date}): ").strip() or trade_date
+                            update_trade(trade_id, trade_date=new_date, filled_qty=new_filled_qty, price=new_price, fees=new_fees, vat=new_vat, cost_value=new_cost_value, profit_loss=new_profit_loss, settings=settings)
                             console.print(f"[green]Trade ID {trade_id} updated successfully.[/green]")
                         except ValueError as e:
                             console.print(f"[red]Invalid input: {e}. Trade not updated.[/red]")
