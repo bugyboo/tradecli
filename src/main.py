@@ -295,6 +295,14 @@ def main():
                 # Decrement price by 0.30$
                 if selected_price is not None:
                     selected_price -= 0.30
+            elif user_input == '+++':
+                # Increment price by 0.60$
+                if selected_price is not None:
+                    selected_price += 0.60
+            elif user_input == '---':
+                # Decrement price by 0.60$
+                if selected_price is not None:
+                    selected_price -= 0.60
             elif user_input == '+-':
                 # Increment price by 0.10$
                 if selected_price is not None:
@@ -303,6 +311,14 @@ def main():
                 # Decrement price by 0.10$
                 if selected_price is not None:
                     selected_price -= 0.10
+            elif user_input == '++-':
+                # Increment price by 0.05$
+                if selected_price is not None:
+                    selected_price += 0.05
+            elif user_input == '--+':
+                # Decrement price by 0.05$
+                if selected_price is not None:
+                    selected_price -= 0.05
 
             else:
                 # Assume price update
