@@ -132,7 +132,7 @@ def main():
 
             # Trades table
             if trades:
-                trades_table = Table(title="Open Positions [dim](Version 1.9)[/dim]")
+                trades_table = Table(title="Open Positions [dim](Version 1.92)[/dim]")
                 trades_table.add_column("#", style="yellow")            
                 trades_table.add_column("Date", style="dim")
                 trades_table.add_column("Ticker", style="cyan")
