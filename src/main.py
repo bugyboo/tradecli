@@ -132,7 +132,7 @@ def main():
 
             # Trades table
             if trades:
-                trades_table = Table(title="Open Positions [dim](Version 1.92)[/dim]")
+                trades_table = Table(title="Open Positions [dim](Version 1.93)[/dim]")
                 trades_table.add_column("#", style="yellow")            
                 trades_table.add_column("Date", style="dim")
                 trades_table.add_column("Ticker", style="cyan")
@@ -148,6 +148,7 @@ def main():
                 total_qty = 0
                 total_cost_value = 0
                 sub_pl = 0
+                sub_loss = 0
                 for trade in trades:
                     ID, trade_date, symbol, opr, filled_qty, price, fees, vat, cost_value, profit_loss = trade                    
                     current_price = current_prices.get(symbol, price)
@@ -168,13 +169,20 @@ def main():
                     total_qty += filled_qty
                     total_cost_value += cost_value
                     sub_pl += pl
+                    if pl < 0:
+                        sub_loss += pl
 
                 # Add totals row
                 trades_table.add_row("---", "---", "---", "---", "---", "---", "---", "---", "---")
                 pl_text_total = f"[red]${sub_pl:,.2f}[/red]" if sub_pl < 0 else f"${sub_pl:,.2f}"
                 pl_text_percent_total = (sub_pl / total_cost_value) if total_cost_value != 0 else 0
                 pl_text_sar_total = f"[red]{sub_pl * settings.get_account().exchange_rate:,.2f}[/red]" if sub_pl < 0 else f"{sub_pl * settings.get_account().exchange_rate:,.2f}"
+                pl_loss_total = f"[red]${sub_loss:,.2f}[/red]" if sub_loss < 0 else f"${sub_loss:,.2f}"
+                pl_loss_percent_total = (sub_loss / total_cost_value) if total_cost_value != 0 else 0
+                pl_loss_sar_total = f"[red]{sub_loss * settings.get_account().exchange_rate:,.2f}[/red]" if sub_loss < 0 else f"{sub_loss * settings.get_account().exchange_rate:,.2f}"
                 trades_table.add_row("Total", "", "", "", str(total_qty), f"{total_cost_value / total_qty :,.2f}", f"${total_cost_value:,.2f}", "", f"{pl_text_total} [dim]{pl_text_percent_total:.2%}[/dim]", pl_text_sar_total)
+                if sub_loss < 0:
+                    trades_table.add_row("Loss", "", "", "", "", "", "", "", f"{pl_loss_total} [dim]{pl_loss_percent_total:.2%}[/dim]", pl_loss_sar_total)
 
                 console.print(trades_table)
                 
