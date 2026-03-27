@@ -202,10 +202,10 @@ def main_menu(settings: Settings, settings_path: str):
             trade_id_input = input("Enter Trade ID to view trade details: ").strip()
             if trade_id_input.isdigit():
                 trade_id = int(trade_id_input)
-                cursor.execute("SELECT ID, trade_date, symbol, opr, filled_qty, price, fees, vat, cost_value, profit_loss, is_position_open FROM TRADES WHERE ID = ?", (trade_id,))
+                cursor.execute("SELECT ID, trade_date, symbol, opr, filled_qty, price, fees, vat, cost_value, profit_loss, is_position_open, closed_position_price, closed_position_amount FROM TRADES WHERE ID = ?", (trade_id,))
                 trade = cursor.fetchone()
                 if trade:
-                    ID, trade_date, symbol, opr, filled_qty, price, fees, vat, cost_value, profit_loss, is_position_open = trade
+                    ID, trade_date, symbol, opr, filled_qty, price, fees, vat, cost_value, profit_loss, is_position_open, closed_position_price, closed_position_amount = trade
                     is_position_open_text = "OPEN" if is_position_open == 1 else "CLOSED"
                     console.print(f"""
     Trade Details:
@@ -219,6 +219,8 @@ def main_menu(settings: Settings, settings_path: str):
     VAT: ${vat}
     Cost Value: ${cost_value}
     Profit/Loss: ${profit_loss}
+    Closed Position Price: ${closed_position_price}
+    Closed Position Amount: ${closed_position_amount}
                     """)
                     console.print("[blue]Options for Trade:[/blue] C[dim]lose Position,[/dim] O[dim]pen Position[/dim], E[dim]dit position or[/dim] Enter [dim]to go back[/dim]")
                     mark_pos_input = input("Enter choice: ").strip().lower()
@@ -249,7 +251,9 @@ def main_menu(settings: Settings, settings_path: str):
                             new_cost_value = float(input(f"Enter new cost value (current {cost_value}): ").strip() or cost_value)
                             new_profit_loss = float(input(f"Enter new profit/loss (current {profit_loss}): ").strip() or profit_loss)
                             new_date = input(f"Enter new trade date (current {trade_date}): ").strip() or trade_date
-                            update_trade(trade_id, trade_date=new_date, filled_qty=new_filled_qty, price=new_price, fees=new_fees, vat=new_vat, cost_value=new_cost_value, profit_loss=new_profit_loss, settings=settings)
+                            new_closed_position_price = float(input(f"Enter new closed position price (current {closed_position_price}): ").strip() or 0)
+                            new_closed_position_amount = float(input(f"Enter new closed position amount (current {closed_position_amount}): ").strip() or 0)
+                            update_trade(trade_id, trade_date=new_date, filled_qty=new_filled_qty, price=new_price, fees=new_fees, vat=new_vat, cost_value=new_cost_value, profit_loss=new_profit_loss, closed_position_price=new_closed_position_price, closed_position_amount=new_closed_position_amount, settings=settings)
                             console.print(f"[green]Trade ID {trade_id} updated successfully.[/green]")
                         except ValueError as e:
                             console.print(f"[red]Invalid input: {e}. Trade not updated.[/red]")

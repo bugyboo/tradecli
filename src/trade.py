@@ -114,7 +114,7 @@ def delete_trade(trade_id, settings=Settings()):
     except sqlite3.Error as e:
         console.print(f"[red]Error deleting trade: {e}[/red]")        
     
-def update_trade(trade_id, trade_date=None, symbol=None, opr=None, filled_qty=None, price=None, fees=None, vat=None, cost_value=None, profit_loss=None, is_position_open=None, settings=Settings()):
+def update_trade(trade_id, trade_date=None, symbol=None, opr=None, filled_qty=None, price=None, fees=None, vat=None, cost_value=None, profit_loss=None, is_position_open=None, closed_position_price=None, closed_position_amount=None, settings=Settings()):
     """
     Update a trade in the TRADES table by ID.
     Only non-None parameters will be updated.
@@ -155,7 +155,12 @@ def update_trade(trade_id, trade_date=None, symbol=None, opr=None, filled_qty=No
         if is_position_open is not None:
             fields.append("is_position_open = ?")
             values.append(is_position_open)
-        
+        if closed_position_price is not None:
+            fields.append("closed_position_price = ?")
+            values.append(closed_position_price)
+        if closed_position_amount is not None:
+            fields.append("closed_position_amount = ?")
+            values.append(closed_position_amount)
         values.append(trade_id)
         sql = f"UPDATE TRADES SET {', '.join(fields)} WHERE ID = ?"
         cursor.execute(sql, values)

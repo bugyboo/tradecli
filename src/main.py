@@ -110,7 +110,7 @@ def main():
             trades = []
             if symbols:
                 placeholders = ','.join('?' * len(symbols))
-                cursor.execute(f"SELECT ID, trade_date, symbol, opr, filled_qty, price, fees, vat, cost_value, profit_loss FROM TRADES WHERE symbol IN ({placeholders}) AND is_position_open = 1 ORDER BY price", symbols)
+                cursor.execute(f"SELECT ID, trade_date, symbol, opr, filled_qty, price, fees, vat, cost_value, profit_loss, closed_position_amount FROM TRADES WHERE symbol IN ({placeholders}) AND is_position_open = 1 ORDER BY price", symbols)
                 trades = cursor.fetchall()
 
             conn.close()
@@ -132,7 +132,7 @@ def main():
 
             # Trades table
             if trades:
-                trades_table = Table(title="Open Positions [dim](Version 1.93)[/dim]")
+                trades_table = Table(title="Open Positions [dim](Version 1.95)[/dim]")
                 trades_table.add_column("#", style="yellow")            
                 trades_table.add_column("Date", style="dim")
                 trades_table.add_column("Ticker", style="cyan")
@@ -150,7 +150,13 @@ def main():
                 sub_pl = 0
                 sub_loss = 0
                 for trade in trades:
-                    ID, trade_date, symbol, opr, filled_qty, price, fees, vat, cost_value, profit_loss = trade                    
+                    ID, trade_date, symbol, opr, filled_qty, price, fees, vat, cost_value, profit_loss, closed_position_amount = trade
+                    if closed_position_amount is not None and closed_position_amount > 0:
+                        filled_qty = filled_qty - closed_position_amount
+                        filled_qty_str = f"[magenta on white]{int(filled_qty)}[/magenta on white]"
+                        cost_value = price * filled_qty 
+                    else:
+                        filled_qty_str = str(int(filled_qty))
                     current_price = current_prices.get(symbol, price)
                     current_value = current_price * filled_qty
                     current_value = current_value - settings.get_account().calculate_trade_commission_total(current_value, filled_qty)
@@ -164,7 +170,7 @@ def main():
                     pl_text_sar = f"[red]{pl * settings.get_account().exchange_rate:,.2f}[/red]" if pl < 0 else f"{pl * settings.get_account().exchange_rate :,.2f}"
                     opr_text = f"[green]{opr}[/green]" if opr.lower() == 'buy' else f"[red]{opr}[/red]"
                     sell_cost_value = cost_value + settings.get_account().calculate_trade_commission_total(cost_value, filled_qty)
-                    trades_table.add_row(str(counter), str(trade_date), symbol, f"{opr_text} #{str(ID)}", str(filled_qty), f"${price:,.2f}", f"${cost_value:,.2f}", f"{sell_cost_value / filled_qty :,.2f}", F"{pl_text} [dim]{pl_text_percent:.2%}[/dim]", pl_text_sar)
+                    trades_table.add_row(str(counter), str(trade_date), symbol, f"{opr_text} #{str(ID)}", filled_qty_str, f"${price:,.2f}", f"${cost_value:,.2f}", f"{sell_cost_value / filled_qty :,.2f}", F"{pl_text} [dim]{pl_text_percent:.2%}[/dim]", pl_text_sar)
                     counter += 1
                     total_qty += filled_qty
                     total_cost_value += cost_value
@@ -180,7 +186,7 @@ def main():
                 pl_loss_total = f"[red]${sub_loss:,.2f}[/red]" if sub_loss < 0 else f"${sub_loss:,.2f}"
                 pl_loss_percent_total = (sub_loss / total_cost_value) if total_cost_value != 0 else 0
                 pl_loss_sar_total = f"[red]{sub_loss * settings.get_account().exchange_rate:,.2f}[/red]" if sub_loss < 0 else f"{sub_loss * settings.get_account().exchange_rate:,.2f}"
-                trades_table.add_row("Total", "", "", "", str(total_qty), f"{total_cost_value / total_qty :,.2f}", f"${total_cost_value:,.2f}", "", f"{pl_text_total} [dim]{pl_text_percent_total:.2%}[/dim]", pl_text_sar_total)
+                trades_table.add_row("Total", "", "", "", str(int(total_qty)), f"{total_cost_value / total_qty :,.2f}", f"${total_cost_value:,.2f}", "", f"{pl_text_total} [dim]{pl_text_percent_total:.2%}[/dim]", pl_text_sar_total)
                 if sub_loss < 0:
                     trades_table.add_row("Loss", "", "", "", "", "", "", "", f"{pl_loss_total} [dim]{pl_loss_percent_total:.2%}[/dim]", pl_loss_sar_total)
 
