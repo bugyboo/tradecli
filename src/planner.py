@@ -137,11 +137,11 @@ def plan_menu(trades, selected_ticker, current_prices, settings: Settings):
                 target_price = float(input("Enter target exit price: ").strip())
                 exit_price = target_price
                 achieved_profit_usd = (exit_price * total_qty) - total_cost_value
-                console.print(f"[green]Calculated Exit Price: ${exit_price:.2f} for total quantity {total_qty} achieving profit of ${achieved_profit_usd:.2f}[/green]")
+                console.print(f"[green]Calculated Exit Price: ${exit_price:.2f} for total quantity {total_qty} achieving profit of ${achieved_profit_usd:.2f} | {achieved_profit_usd * settings.get_account().exchange_rate:,.2f} [/green]")
             elif exit_choice == 'd':
                 desired_profit_usd = float(input("Enter desired profit in USD: ").strip())
                 exit_price = (total_cost_value + desired_profit_usd) / total_qty
-                console.print(f"[green]Calculated Exit Price: ${exit_price:.2f} for total quantity {total_qty} to achieve desired profit of ${desired_profit_usd:.2f}[/green]")
+                console.print(f"[green]Calculated Exit Price: ${exit_price:.2f} for total quantity {total_qty} to achieve desired profit of ${desired_profit_usd:.2f} | {desired_profit_usd * settings.get_account().exchange_rate:,.2f}[/green]")
             input("Press Enter to continue...")
             return
         except ValueError as e:

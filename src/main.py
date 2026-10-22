@@ -110,7 +110,7 @@ def main():
             trades = []
             if symbols:
                 placeholders = ','.join('?' * len(symbols))
-                cursor.execute(f"SELECT ID, trade_date, symbol, opr, filled_qty, price, fees, vat, cost_value, profit_loss, closed_position_amount FROM TRADES WHERE symbol IN ({placeholders}) AND is_position_open = 1 ORDER BY price", symbols)
+                cursor.execute(f"SELECT ID, trade_date, symbol, opr, filled_qty, price, fees, vat, cost_value, profit_loss, closed_position_amount FROM TRADES WHERE symbol IN ({placeholders}) AND is_position_open = 1 ORDER BY symbol DESC, price", symbols)
                 trades = cursor.fetchall()
 
             conn.close()
@@ -132,7 +132,7 @@ def main():
 
             # Trades table
             if trades:
-                trades_table = Table(title="Open Positions [dim](Version 1.96)[/dim]")
+                trades_table = Table(title="Open Positions [dim](Version 1.97)[/dim]")
                 trades_table.add_column("#", style="yellow")            
                 trades_table.add_column("Date", style="dim")
                 trades_table.add_column("Ticker", style="cyan")
@@ -281,7 +281,16 @@ def main():
                 delete_trade_menu(settings=settings)
             elif user_input.lower() == 't':
                 # Change ticker
-                selected_ticker = input("Enter new ticker symbol: ").strip().upper()
+                for index, row in enumerate(ticker_data, start=1):
+                    symbol, _, _, _, current_price = row
+                    console.print(f"{index}. {symbol} (${current_price:,.2f})")
+                ticker_choice = input("Choose a ticker number or enter a new ticker symbol: ").strip()
+                if ticker_choice:
+                    if ticker_choice.isdigit() and 1 <= int(ticker_choice) <= len(ticker_data):
+                        selected_ticker = ticker_data[int(ticker_choice) - 1][0]
+                    else:
+                        selected_ticker = ticker_choice.upper()
+                    selected_price = current_prices.get(selected_ticker)
             elif user_input.lower() == 'f':
                 # Filter trades menu
                 filter_menu(settings=settings, current_prices=current_prices)
